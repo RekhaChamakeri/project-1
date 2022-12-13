@@ -9,8 +9,8 @@ router.get("/test-me", function (req, res) {
 })
 
 router.post("/authors",authorController.createAuthor)
-router.post("/blog",middleware.mid1,middleware.mid4,blogController.createBlog)
-router.get("/getBlog",middleware.mid1,blogController.getBlogs)
+router.post("/blogs",middleware.mid1,middleware.mid4,blogController.createBlog)
+router.get("/blogs",middleware.mid1,blogController.getBlogs)
 router.delete("/blogs/:blogId",middleware.mid1,middleware.mid2,blogController.deleteBlogs)
 router.put("/blogs/:blogId",middleware.mid1,middleware.mid2,blogController.updateBlog)
 router.delete("/blogs",middleware.mid1,middleware.mid3,blogController.deleteUser)

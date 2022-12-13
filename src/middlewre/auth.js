@@ -35,7 +35,7 @@ const mid2 = async function (req, res, next) {
     var isValid = mongoose.Types.ObjectId.isValid(blogToBeModified)
     if (!isValid) return res.status(400).send({ status: false, msg: "enter valid id" })
     let blogData = await blogModel.findById(blogToBeModified)
-    if(!blogData){return res.status(400).send({status:false,msg:"blog not found"})}
+    if(!blogData){return res.status(404).send({status:false,msg:"blog not found"})}
     let authId = blogData.authorId
     let userLoggedIn = decodedToken.authoRId
     if (authId == userLoggedIn) {
@@ -47,6 +47,26 @@ catch (error) {
 }
 }
 
+const mid3 = async function (req, res, next) {
+    try {
+        let token = req.headers["x-api-key"];
+        let decodedToken = jwt.verify(token,  'functionup-radon');
+        let id = req.query.authorId
+        let authorLoggedIn = decodedToken.authoRId
+        if(id){
+            var isValid = mongoose.Types.ObjectId.isValid(id)
+            if (!isValid) return res.status(400).send({ status: false, msg: "enter valid author id" })
+            //if(!isValidObjectId(id))return res.status(400).send({status:false,msg:"Enter Valid authorId"})
+            if(id != authorLoggedIn) return res.status(403).send({ status: false, msg: 'author logged is not allowed to modify the requested users data' })
+        }
+        if (Object.keys(req.query).length < 1) return res.status(400).send({ status: false, msg: "query params is not given" })
+        if(!id) req.query.authorId = authorLoggedIn
+        next()
+    }
+    catch (error) {
+        res.status(500).send({ msg: error.message })
+    }
+}
 
 
 
@@ -77,39 +97,6 @@ const mid4 = async function (req, res, next) {
 }
 
 
-const mid3 = async function (req, res, next) {
-    try{
-    let token = req.headers["x-api-key"];
-    if (!token) token = req.headers["x-api-key"];
-
-    let decodedToken = jwt.verify(token, 'functionup-radon')
-
-    if (!decodedToken) return res.status(403).send({ status: false, msg: "token is not valid" })
-
-    let authorid = req.query.authorId;
-    let Category = req.query.category;
-    let Subcategory = req.query.subcategory;
-    let tag = req.query.tags;
-    let unpublished = req.query.isPublished
-    if (authorid === undefined && Category === undefined && tag === undefined && Subcategory === undefined){return res.status(400).send({status:false,msg:"data is required to filter"})}
-    let blogData = await blogModel.findOne({$or:[{authorId:authorid},{isPublished:unpublished},{category:Category},{tags:tag},{subcategory:Subcategory}]})
-    if(!blogData){return res.status(400).send({status:false,msg:"data not found"})}
-    let authId = blogData.authorId
-    //console.log(authId)
-    let userLoggedIn = decodedToken.authoRId
-    console.log(userLoggedIn)
-    if (authId == userLoggedIn) {
-        let del=blogData.isDeleted
-        //console.log(del)
-    if(del){
-        return res.status(400).send({status:false,msg:"data is already deleted"})
-    }
-        next()
-    } else { return res.send({ status: false, msg: 'User logged is not allowed to modify the requested users data' }) }
-}catch (error) {
-    res.status(500).send({ msg: error.message })
-}
-}
 
 
 
